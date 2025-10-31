@@ -10,46 +10,77 @@ To implement a program to illustrate the mechanism of sliding window protocol
 6. Stop the Program
 ## PROGRAM
 
-Developed by : **ARUL KUMARAN S A**
-
-Reg no : **212224040030**
-
 ### Client
 ```python
 import socket
+
+# Create a socket
 s = socket.socket()
-s.bind(('localhost',8002))
-s.listen(5)
-c, addr = s.accept()
-ListSize = int(input("Enter the number of frames to send : "))
-List = list(range(ListSize))
-WindowSize = int(input("Enter Window Size : "))
-st, i = 0, 0
+s.connect(('localhost', 8000))
+print("Connected to the server successfully!")
 while True:
-    while(i < ListSize):
-        st += WindowSize
-        c.send(str(List[i:st]).encode())
-        Acknowledgment = c.recv(1024).decode()
-        if Acknowledgment:
-            print(Acknowledgment)
-            i+=st
+    data = s.recv(1024).decode()
+    if not data:
+        print("No more frames to receive. Closing connection.")
+        break
+
+    print(f"Received frames: {data}")
+    
+    # Send acknowledgment back to the server
+    s.send("Acknowledgment received from client.".encode())
+
+s.close()
 
 ```
 
 ### Server
 ```python
 import socket
+
+# Create a socket
 s = socket.socket()
-s.connect(('localhost', 8002))
-while True:
-    print(s.recv(1024).decode())
-    s.send("Acknowledgement received from the server".encode())
+s.bind(('localhost', 8000))
+s.listen(5)
+print("Server is waiting for connection...")
+
+# Accept connection
+c, addr = s.accept()
+print("Connected with:", addr)
+
+# Input number of frames
+size = int(input("Enter number of frames to send: "))
+frames = list(range(size))
+
+# Input window size
+window_size = int(input("Enter Window Size: "))
+
+start = 0  # Starting frame index
+
+# Send frames in windows
+while start < len(frames):
+    end = start + window_size
+    window = frames[start:end]
+    print(f"Sending frames: {window}")
+    
+    # Send the current window
+    c.send(str(window).encode())
+    
+    # Wait for acknowledgment
+    ack = c.recv(1024).decode()
+    if ack:
+        print(f"Acknowledgment received for frames up to: {ack}")
+        start += window_size  # Move the window
+
+print("All frames sent successfully.")
+c.close()
+s.close()
 ```
 
 ## OUPUT
 Refer to the screenshot below to see the output of the program
 
-<img width="1832" height="502" alt="image" src="https://github.com/user-attachments/assets/97ab3819-a9c9-4bba-8ad4-fb8436395793" />
+<img width="1918" height="1198" alt="image" src="https://github.com/user-attachments/assets/eb9b3497-b5c0-470a-98f3-745f066b464d" />
+
 
 
 ## RESULT
